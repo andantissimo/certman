@@ -1,0 +1,19 @@
+[Unit]
+Description=Certificate Management Service
+After=network.target
+
+[Service]
+WorkingDirectory=@SYSCONFDIR@/@ASSEMBLY_NAME@
+ExecStart=@SBINDIR@/@ASSEMBLY_NAME@
+Restart=always
+RestartSec=10
+RuntimeDirectory=@ASSEMBLY_NAME@
+SyslogIdentifier=@ASSEMBLY_NAME@
+User=@USER@
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=@URLS@
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=HOME=/var/lib/@ASSEMBLY_NAME@
+
+[Install]
+WantedBy=multi-user.target

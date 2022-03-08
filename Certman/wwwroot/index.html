@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Certman</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+  <form name="cas">
+    <fieldset>
+      <legend>CAs</legend>
+      <table>
+        <thead>
+          <tr><th></th><th>Subject</th><th>From</th><th>Until</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr><td>+</td><td colspan="3"><label>CN=<input type="text" name="cn"></label></td><td></td></tr>
+        </tfoot>
+      </table>
+    </fieldset>
+  </form>
+  <form name="certs">
+    <fieldset>
+      <legend>Certificates</legend>
+      <table>
+        <thead>
+          <tr><th></th><th>Subject</th><th>From</th><th>Until</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr><td>+</td><td colspan="3"><label>CN=<input type="text" name="cn"></label></td><td></td></tr>
+        </tfoot>
+      </table>
+      <aside>
+        <pre class="crt" tabindex="0"></pre>
+        <pre class="key" tabindex="0"></pre>
+      </aside>
+    </fieldset>
+  </form>
+  <script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+html {
+    background-color: #333;
+    color: #eee;
+}
+body {
+    font-family: sans-serif;
+    font-size: 90%;
+}
+form + form {
+    margin-top: 10px;
+}
+fieldset {
+    border: 1px solid #666;
+}
+fieldset legend {
+    color: #eee;
+}
+fieldset table {
+    border-collapse: collapse;
+    line-height: 110%;
+}
+fieldset table tr th {
+    border: 1px dashed #666;
+    font-weight: normal;
+    padding: 0.25em 0.5em;
+}
+fieldset table tr th:first-child {
+    min-width: 1.5em;
+}
+fieldset table tr th:nth-child(2) {
+    min-width: 15em;
+}
+fieldset table tr th:nth-child(3),
+fieldset table tr th:nth-child(4) {
+    min-width: 10em;
+}
+fieldset table tr th:nth-child(5) {
+    min-width: 5em;
+}
+fieldset table tr td {
+    border: 1px dashed #666;
+    white-space: pre-line;
+    padding: 0.25em 0.5em;
+}
+fieldset table tr td:first-child {
+    text-align: center;
+    vertical-align: middle;
+}
+fieldset table tr.expired td:nth-child(2),
+fieldset table tr.expired td:nth-child(3),
+fieldset table tr.expired td:nth-child(4) {
+    text-decoration: line-through;
+}
+fieldset table a {
+    text-decoration: none;
+    cursor: pointer;
+}
+fieldset table a + a {
+    margin-left: 0.5em;
+}
+fieldset table input[type="text"] {
+    background-color: inherit;
+    color: #eee;
+    border: none;
+    border-bottom: 1px solid #666;
+    margin-bottom: -2px;
+}
+fieldset aside {
+    margin-left: -8px;
+}
+fieldset aside pre {
+    font-size: 80%;
+    border: 1px dashed #666;
+    width: fit-content;
+    padding: 0.2em 0.5em;
+    margin: 8px 0 0 8px;
+    float: left;
+}
+
+.hidden {
+    display: none;
+}

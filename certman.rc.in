@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# PROVIDE: certman
+# REQUIRE: LOGIN NETWORKING
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="certman"
+rcvar="certman_enable"
+
+load_rc_config "$name"
+
+: ${certman_enable:=NO}
+: ${certman_urls:=@URLS@}
+: ${certman_user:=@USER@}
+
+pidfile="/var/run/@ASSEMBLY_NAME@.pid"
+logfile="/var/log/@ASSEMBLY_NAME@.log"
+datadir="/var/db/@ASSEMBLY_NAME@"
+workdir="@SYSCONFDIR@/@ASSEMBLY_NAME@"
+
+start_cmd="certman_start"
+stop_postcmd="certman_poststop"
+
+command="@SBINDIR@/@ASSEMBLY_NAME@"
+
+certman_start() {
+    cd ${workdir} && \
+    ASPNETCORE_ENVIRONMENT=Production \
+    ASPNETCORE_URLS=${certman_urls} \
+    DOTNET_PRINT_TELEMETRY_MESSAGE=false \
+    HOME=${datadir} \
+    /usr/sbin/daemon -p ${pidfile} -u ${certman_user} -o ${logfile} ${command}
+}
+
+certman_poststop() {
+    case ${certman_urls} in http://unix:*)
+        sockfile=`echo ${certman_urls} | sed s!^http://unix:!!`
+        [ -S ${sockfile} ] && /bin/rm ${sockfile}
+        ;;
+    esac
+}
+
+run_rc_command "$1"
