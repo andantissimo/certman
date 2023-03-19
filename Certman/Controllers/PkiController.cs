@@ -30,7 +30,7 @@ public class PkiController : ControllerBase, IDisposable
         await file.CopyToAsync(buffer).ConfigureAwait(false);
         try
         {
-            var cert = new X509Certificate2(
+            using var cert = new X509Certificate2(
                 buffer.ToArray(),
                 password,
                 X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
@@ -85,7 +85,8 @@ public class PkiController : ControllerBase, IDisposable
             new X509SubjectKeyIdentifierExtension(new PublicKey(key), critical: false)
             );
         using var cert = req.CreateSelfSigned(notBefore, notBefore + TimeSpan.FromDays(days));
-        _store.Add(cert.CopyWithKeyStorageFlags(X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet));
+        using var copy = cert.CopyWithKeyStorageFlags(X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+        _store.Add(copy);
         return Ok(cert.Thumbprint);
     }
 
@@ -125,7 +126,8 @@ public class PkiController : ControllerBase, IDisposable
         var key = cert.GetPrivateKey();
         if (key is null)
             return NotFound();
-        var pem = PemEncoding.Write("PRIVATE KEY", key.MakeExportable().ExportPkcs8PrivateKey());
+        using var exp = key.MakeExportable();
+        var pem = PemEncoding.Write("PRIVATE KEY", exp.ExportPkcs8PrivateKey());
         return File(Encoding.ASCII.GetBytes(pem), "application/x-pem-file", GetSafeFileName(cert, ".key"));
     }
 
@@ -219,7 +221,8 @@ public class PkiController : ControllerBase, IDisposable
         req.CertificateExtensions.Add(sanb.Build());
         using var cert = req.Create(authority, authority.NotBefore, authority.NotAfter, Guid.NewGuid().ToByteArray())
                             .CopyWithPrivateKey(key);
-        _store.Add(cert.CopyWithKeyStorageFlags(X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet));
+        using var copy = cert.CopyWithKeyStorageFlags(X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+        _store.Add(copy);
         return Ok(cert.Thumbprint);
     }
 

@@ -10,8 +10,18 @@ insert_final_newline = true
 # allow using _logger.Log*** methods
 dotnet_diagnostic.CA1848.severity = silent
 
+# Dispose objects before losing scope
+dotnet_diagnostic.CA2000.severity = error
 # Do not directly await a Task
 dotnet_diagnostic.CA2007.severity = error
+# Do not assign property within its setter
+dotnet_diagnostic.CA2011.severity = error
+# Use ValueTasks correctly
+dotnet_diagnostic.CA2012.severity = error
+# Forward the CancellationToken parameter to methods that take one
+dotnet_diagnostic.CA2016.severity = error
+# Parameter count mismatch
+dotnet_diagnostic.CA2017.severity = error
 # Provide correct arguments to formatting methods
 dotnet_diagnostic.CA2241.severity = error
 # Test for NaN correctly
