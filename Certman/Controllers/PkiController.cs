@@ -35,13 +35,13 @@ public class PkiController : ControllerBase, IDisposable
                 password,
                 X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
             if (!cert.HasPrivateKey)
-                return BadRequest($"Private key required: {file.FileName}");
+                return BadRequest("Private key required: {Name}", file.FileName);
             _store.Add(cert);
             return Ok(cert.Thumbprint);
         }
         catch (Exception ex) when (ex is ArgumentException or CryptographicException)
         {
-            return BadRequest($"Invalid certificate file: {file.FileName}");
+            return BadRequest("Invalid certificate file: {Name}", file.FileName);
         }
     }
 
@@ -65,7 +65,7 @@ public class PkiController : ControllerBase, IDisposable
         }
         catch (Exception ex) when (ex is CryptographicException)
         {
-            return BadRequest($"Invalid CN: {cn}");
+            return BadRequest("Invalid CN: {CN}", cn);
         }
         using var key = RSA.Create(2048);
         var req = new CertificateRequest(subject, key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -163,31 +163,35 @@ public class PkiController : ControllerBase, IDisposable
     }
 
     [HttpPost("{thumbprint}")]
-    public IActionResult Issue([FromRoute] string thumbprint, [FromForm] string cn, [FromForm] string[]? san = null)
+    public IActionResult Issue([FromRoute] string thumbprint, [FromForm] string cn, [FromForm] int days = 398, [FromForm] string[]? san = null)
     {
+        var notBefore = HttpContext.Request.GetTypedHeaders().Date ?? DateTimeOffset.Now;
         var authority = OwnCertificates.FirstOrDefault(c => c.Thumbprint == thumbprint);
         if (authority is null || authority.GetCertificateAuthority() != true)
             return NotFound();
         var authKeyId = authority.GetSubjectKeyIdentifier();
         if (authKeyId is null)
             return NotFound();
+        var notAfter = notBefore + TimeSpan.FromDays(days);
+        if (notAfter > authority.NotAfter)
+            notAfter = authority.NotAfter;
 
         X500DistinguishedName subject;
-        var sanb = new SubjectAlternativeNameBuilder();
+        var sans = new SubjectAlternativeNameBuilder();
         try
         {
             subject = new X500DistinguishedName($"CN={cn}");
             foreach (var name in new[] { cn }.Concat(san ?? Array.Empty<string>()).Distinct())
             {
                 if (IPAddress.TryParse(name, out var addr))
-                    sanb.AddIpAddress(addr);
+                    sans.AddIpAddress(addr);
                 else
-                    sanb.AddDnsName(name);
+                    sans.AddDnsName(name);
             }
         }
         catch (Exception ex) when (ex is ArgumentException or CryptographicException)
         {
-            return BadRequest($"Invalid CN or SAN: {cn}");
+            return BadRequest("Invalid CN or SAN: {CN}, {SAN}", cn, san);
         }
         using var key = RSA.Create(2048);
         var req = new CertificateRequest(subject, key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -218,8 +222,8 @@ public class PkiController : ControllerBase, IDisposable
         req.CertificateExtensions.Add(
             new X509AuthorityKeyIdentifierExtension(authKeyId, critical: false)
             );
-        req.CertificateExtensions.Add(sanb.Build());
-        using var cert = req.Create(authority, authority.NotBefore, authority.NotAfter, Guid.NewGuid().ToByteArray())
+        req.CertificateExtensions.Add(sans.Build());
+        using var cert = req.Create(authority, notBefore, notAfter, Guid.NewGuid().ToByteArray())
                             .CopyWithPrivateKey(key);
         using var copy = cert.CopyWithKeyStorageFlags(X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
         _store.Add(copy);
@@ -232,9 +236,11 @@ public class PkiController : ControllerBase, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private IActionResult BadRequest(string message)
+    private IActionResult BadRequest(string? message, params object?[] args)
     {
-        _logger.LogDebug("Bad request: {Message}", message);
+        #pragma warning disable CA2254
+        _logger.LogDebug($"Bad request: {message}", args);
+        #pragma warning restore CA2254
         return BadRequest();
     }
 
