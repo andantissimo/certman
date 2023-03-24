@@ -175,6 +175,8 @@ public class PkiController : ControllerBase, IDisposable
         var notAfter = notBefore + TimeSpan.FromDays(days);
         if (notAfter > authority.NotAfter)
             notAfter = authority.NotAfter;
+        if (notBefore > notAfter)
+            notBefore = notAfter;
 
         X500DistinguishedName subject;
         var sans = new SubjectAlternativeNameBuilder();
