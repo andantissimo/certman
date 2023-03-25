@@ -29,7 +29,6 @@ certman_start() {
     cd ${workdir} && \
     ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_URLS=${certman_urls} \
-    DOTNET_PRINT_TELEMETRY_MESSAGE=false \
     HOME=${datadir} \
     /usr/sbin/daemon -p ${pidfile} -u ${certman_user} -o ${logfile} ${command}
 }

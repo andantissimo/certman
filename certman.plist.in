@@ -12,8 +12,6 @@
     <string>Production</string>
     <key>ASPNETCORE_URLS</key>
     <string>@URLS@</string>
-    <key>DOTNET_PRINT_TELEMETRY_MESSAGE</key>
-    <string>false</string>
     <key>HOME</key>
     <string>/var/db/@ASSEMBLY_NAME@</string>
   </dict>
