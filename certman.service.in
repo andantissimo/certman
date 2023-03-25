@@ -12,7 +12,6 @@ SyslogIdentifier=@ASSEMBLY_NAME@
 User=@USER@
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=ASPNETCORE_URLS=@URLS@
-Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
 Environment=HOME=/var/lib/@ASSEMBLY_NAME@
 
 [Install]
