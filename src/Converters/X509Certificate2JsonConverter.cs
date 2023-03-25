@@ -1,4 +1,4 @@
-namespace System.Text.Json.Serialization;
+namespace Certman.Converters;
 
 public class X509Certificate2JsonConverter : JsonConverter<X509Certificate2>
 {

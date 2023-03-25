@@ -1,3 +1,5 @@
+using Certman.Converters;
+
 var web = WebApplication.CreateBuilder(args);
 web.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new X509Certificate2JsonConverter()));
