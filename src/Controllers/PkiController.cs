@@ -222,7 +222,7 @@ public class PkiController : ControllerBase, IDisposable
             new X509SubjectKeyIdentifierExtension(new PublicKey(key), critical: false)
             );
         req.CertificateExtensions.Add(
-            new X509AuthorityKeyIdentifierExtension(authKeyId, critical: false)
+            X509AuthorityKeyIdentifierExtension.CreateFromSubjectKeyIdentifier(Convert.FromHexString(authKeyId))
             );
         req.CertificateExtensions.Add(sans.Build());
         using var cert = req.Create(authority, notBefore, notAfter, Guid.NewGuid().ToByteArray())
@@ -238,7 +238,7 @@ public class PkiController : ControllerBase, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private IActionResult BadRequest(string? message, params object?[] args)
+    private BadRequestResult BadRequest(string? message, params object?[] args)
     {
         #pragma warning disable CA2254
         _logger.LogDebug($"Bad request: {message}", args);
