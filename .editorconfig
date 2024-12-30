@@ -7,6 +7,9 @@ indent_size = 4
 indent_style = space
 insert_final_newline = true
 
+# allow namespaces not matching folder structure
+dotnet_diagnostic.IDE0130.severity = silent
+
 # allow using _logger.Log*** methods
 dotnet_diagnostic.CA1848.severity = silent
 

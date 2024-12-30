@@ -1,6 +1,5 @@
 global using Microsoft.AspNetCore.HttpOverrides;
 global using Microsoft.AspNetCore.Mvc;
-global using System.Diagnostics.CodeAnalysis;
 global using System.Formats.Asn1;
 global using System.Net;
 global using System.Security.Cryptography;

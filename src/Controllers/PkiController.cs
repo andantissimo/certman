@@ -2,12 +2,13 @@
 
 [ApiController]
 [Route("[controller]")]
-public class PkiController : ControllerBase, IDisposable
+public partial class PkiController : ControllerBase, IDisposable
 {
-    private static readonly Regex CommonNamePattern
-        = new(@"(?<=\bCN=)([^,]+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex UnsafeCharPattern
-        = new(@"[\s""#*/:<>?\\|]+", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    [GeneratedRegex(@"(?<=\bCN=)([^,]+)", RegexOptions.CultureInvariant)]
+    private static partial Regex CommonNamePattern();
+
+    [GeneratedRegex(@"[\s""#*/:<>?\\|]+", RegexOptions.CultureInvariant)]
+    private static partial Regex UnsafeCharPattern();
 
     private readonly ILogger _logger;
 
@@ -61,9 +62,9 @@ public class PkiController : ControllerBase, IDisposable
         X500DistinguishedName subject;
         try
         {
-            subject = new X500DistinguishedName($"CN={cn}");
+            subject = new($"CN={cn}");
         }
-        catch (Exception ex) when (ex is CryptographicException)
+        catch (Exception ex) when (ex is ArgumentException or CryptographicException)
         {
             return BadRequest("Invalid CN: {CN}", cn);
         }
@@ -95,7 +96,7 @@ public class PkiController : ControllerBase, IDisposable
     public IActionResult GetChildren(string thumbprint)
     {
         var authority = OwnCertificates.FirstOrDefault(c => c.Thumbprint == thumbprint);
-        if (authority is null || authority.GetCertificateAuthority() != true)
+        if (authority?.GetCertificateAuthority() != true)
             return NotFound();
         var authKeyId = authority.GetSubjectKeyIdentifier();
         if (authKeyId is null)
@@ -167,7 +168,7 @@ public class PkiController : ControllerBase, IDisposable
     {
         var notBefore = HttpContext.Request.GetTypedHeaders().Date ?? DateTimeOffset.Now;
         var authority = OwnCertificates.FirstOrDefault(c => c.Thumbprint == thumbprint);
-        if (authority is null || authority.GetCertificateAuthority() != true)
+        if (authority?.GetCertificateAuthority() != true)
             return NotFound();
         var authKeyId = authority.GetSubjectKeyIdentifier();
         if (authKeyId is null)
@@ -182,8 +183,8 @@ public class PkiController : ControllerBase, IDisposable
         var sans = new SubjectAlternativeNameBuilder();
         try
         {
-            subject = new X500DistinguishedName($"CN={cn}");
-            foreach (var name in new[] { cn }.Concat(san ?? Array.Empty<string>()).Distinct())
+            subject = new($"CN={cn}");
+            foreach (var name in new[] { cn }.Concat(san ?? []).Distinct())
             {
                 if (IPAddress.TryParse(name, out var addr))
                     sans.AddIpAddress(addr);
@@ -211,11 +212,7 @@ public class PkiController : ControllerBase, IDisposable
             );
         req.CertificateExtensions.Add(
             new X509EnhancedKeyUsageExtension(
-                new OidCollection
-                {
-                    X509EnhancedKeyUsages.ServerAuthentication,
-                    X509EnhancedKeyUsages.ClientAuthentication,
-                },
+                [X509EnhancedKeyUsages.ServerAuthentication, X509EnhancedKeyUsages.ClientAuthentication],
                 critical: true)
             );
         req.CertificateExtensions.Add(
@@ -248,6 +245,6 @@ public class PkiController : ControllerBase, IDisposable
 
     private static string GetSafeFileName(X509Certificate2 cert, string suffix)
     {
-        return $"{UnsafeCharPattern.Replace(CommonNamePattern.Match(cert.Subject).Value, "_")}{suffix}";
+        return $"{UnsafeCharPattern().Replace(CommonNamePattern().Match(cert.Subject).Value, "_")}{suffix}";
     }
 }

@@ -7,7 +7,6 @@ public static class AsymmetricAlgorithmExtensions
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    [SuppressMessage("Interoperability", "CA1416")]
     public static AsymmetricAlgorithm MakeExportable(this AsymmetricAlgorithm key)
     {
         const CngExportPolicies Exportability = CngExportPolicies.AllowExport | CngExportPolicies.AllowPlaintextExport;
