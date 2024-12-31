@@ -32,12 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!/^[^"#+,;<=>]+$/.test($cn.value))
             $cn.select();
         else {
-            const res = await fetch('pki/ca', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    cn: $cn.value,
-                }),
-            });
+            const body = new URLSearchParams({ cn: $cn.value });
+            const res = await fetch('pki/ca', { method: 'POST', body });
             if (!res.ok)
                 $cn.select();
             else {
@@ -53,19 +49,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const $ca = $cas.elements.namedItem('ca');
         /** @type {HTMLInputElement} */
         const $cn = $certs.elements.namedItem('cn');
+        /** @type {HTMLInputElement} */
+        const $san = $certs.elements.namedItem('san');
         if (!/^[^"#+,;<=>]+$/.test($cn.value))
             $cn.select();
+        else if (!/^[^"#+;<=>]*$/.test($san.value))
+            $san.select();
         else {
-            const res = await fetch(`pki/${$ca.value}`, {
-                method: 'POST',
-                body: new URLSearchParams({
-                    cn: $cn.value,
-                }),
-            });
+            const body = new URLSearchParams({ cn: $cn.value });
+            for (const name of $san.value.split(/[,\s]+/).filter(n => n))
+                body.append('san[]', name);
+            const res = await fetch(`pki/${$ca.value}`, { method: 'POST', body });
             if (!res.ok)
                 $cn.select();
             else {
-                $cn.value = '';
+                $cn.value = $san.value = '';
                 await updateCertificates(await res.text());
             }
         }
@@ -130,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 $radio.click();
             const $label = $tr.insertCell().appendChild(document.createElement('label'));
             $label.htmlFor = $radio.id, $label.textContent = cert.subject;
+            $tr.insertCell().textContent = cert.subjectAltName?.map(n => n.replace(/^(DNS|IP):/, ''))?.join(', ') ?? '';
             $tr.insertCell().textContent = dateFormat.format(new Date(cert.notBefore));
             $tr.insertCell().textContent = dateFormat.format(new Date(cert.notAfter));
             const $icons = $tr.insertCell();
